@@ -137,10 +137,7 @@ export async function exportTTF() {
   }
 }
 
-// Check GitHub Releases for a newer application version. The startup path
-// uses the cached behavior to avoid hammering the GitHub API on every launch.
-export async function checkForUpdates(force = false) {
-  const st = useEditorStore.getState();
+async function getUpdateInfo(force = false) {
   try {
     const [version, url, available, errorMessage] =
       await AppBindings.CheckForUpdates(force);
@@ -151,11 +148,37 @@ export async function checkForUpdates(force = false) {
     if (!available || !version) {
       return null;
     }
-    st.showToast(I18N[st.lang].updateAvailable.replace('{version}', version));
     return { version, url };
   } catch (err) {
     console.warn('Update check skipped', err);
     return null;
+  }
+}
+
+// Check GitHub Releases for a newer application version. The startup path
+// uses the cached behavior to avoid hammering the GitHub API on every launch.
+export async function checkForUpdates(force = false) {
+  const st = useEditorStore.getState();
+  const info = await getUpdateInfo(force);
+  if (!info) {
+    return null;
+  }
+  st.showToast(
+    I18N[st.lang].updateAvailable.replace('{version}', info.version),
+  );
+  return info;
+}
+
+export async function checkForUpdatesStatus(force = false) {
+  return getUpdateInfo(force);
+}
+
+export async function hasCompatibleUpdate(force = false) {
+  try {
+    const [, , available] = await AppBindings.CheckForUpdates(force);
+    return available;
+  } catch {
+    return false;
   }
 }
 

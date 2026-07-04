@@ -60,6 +60,26 @@
   color: var(--text);
   background: var(--panel-2);
 }
+.menubar-update {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+}
+.update-trigger {
+  border-radius: 999px;
+  padding: 0 10px;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+.update-trigger:hover {
+  color: var(--ink);
+}
+.menubar-update.update-ready .update-trigger {
+  color: white;
+  background: #2f9e44;
+  border-color: #2f9e44;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.15) inset;
+}
 .menu.open .menu-trigger {
   color: var(--ink);
   background: var(--panel-2);

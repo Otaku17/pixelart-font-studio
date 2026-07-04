@@ -13,6 +13,8 @@ import {
   exportAtlasPNG,
   exportGlyphPNG,
   exportTTF,
+  hasCompatibleUpdate,
+  downloadAndInstallUpdate,
 } from '../lib/actions';
 
 export function MenuBar() {
@@ -24,6 +26,7 @@ export function MenuBar() {
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
   const [languageOpen, setLanguageOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
+  const [updateAvailable, setUpdateAvailable] = useState(false);
   const themePref = useEditorStore((s) => s.themePref);
   const THEME_ICON: Record<string, string> = {
     system: 'monitor',
@@ -38,6 +41,19 @@ export function MenuBar() {
     }
     document.addEventListener('click', onDocClick);
     return () => document.removeEventListener('click', onDocClick);
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    void (async () => {
+      const status = await hasCompatibleUpdate(true);
+      if (!cancelled) {
+        setUpdateAvailable(status);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   function toggleMenu(name: string, e: React.MouseEvent) {
@@ -144,6 +160,18 @@ export function MenuBar() {
           <div className="menu-sep" />
           <div className="menu-static">{t.helpText}</div>
         </div>
+      </div>
+
+      <div
+        className={`menu menubar-update${updateAvailable ? ' update-ready' : ''}`}
+      >
+        <button
+          className="menu-trigger update-trigger"
+          onClick={() => void downloadAndInstallUpdate(true)}
+          title={t.updateButton}
+        >
+          <Icon name="refresh" /> {t.updateButton}
+        </button>
       </div>
 
       {shortcutsOpen && (

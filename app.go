@@ -69,17 +69,22 @@ func compareVersions(left, right string) int {
 func selectReleaseAsset(assets []releaseAsset, goos, goarch string) *releaseAsset {
 	for _, asset := range assets {
 		name := strings.ToLower(asset.Name)
+		isArchive := strings.Contains(name, ".zip") || strings.Contains(name, ".tar.gz") || strings.Contains(name, ".tgz")
+		isBinary := strings.HasSuffix(name, ".exe") || strings.HasSuffix(name, ".app") || strings.HasSuffix(name, ".dmg") || strings.HasSuffix(name, ".pkg") || strings.HasSuffix(name, ".msi")
+		if !isArchive && !isBinary {
+			continue
+		}
 		switch goos {
 		case "windows":
-			if strings.Contains(name, "windows") && strings.Contains(name, goarch) && strings.Contains(name, ".zip") {
+			if strings.Contains(name, "windows") || strings.Contains(name, "win") || strings.HasSuffix(name, ".exe") || strings.HasSuffix(name, ".msi") {
 				return &asset
 			}
 		case "darwin":
-			if strings.Contains(name, "darwin") && strings.Contains(name, "universal") && strings.Contains(name, ".zip") {
+			if strings.Contains(name, "darwin") || strings.Contains(name, "mac") || strings.Contains(name, "osx") || strings.Contains(name, "universal") || strings.HasSuffix(name, ".app") || strings.HasSuffix(name, ".dmg") || strings.HasSuffix(name, ".pkg") {
 				return &asset
 			}
 		case "linux":
-			if strings.Contains(name, "linux") && strings.Contains(name, goarch) && (strings.Contains(name, ".tar.gz") || strings.Contains(name, ".tgz")) {
+			if strings.Contains(name, "linux") || strings.Contains(name, "amd64") || strings.Contains(name, "x64") || strings.Contains(name, "tar") {
 				return &asset
 			}
 		}
@@ -136,6 +141,14 @@ func (a *App) checkForUpdates(force bool) (string, string, bool, error) {
 		return release.TagName, "", false, nil
 	}
 	return release.TagName, asset.BrowserDownloadURL, true, nil
+}
+
+func (a *App) hasCompatibleUpdate(force bool) (bool, error) {
+	if a.ctx == nil {
+		return false, nil
+	}
+	_, _, available, err := a.checkForUpdates(force)
+	return available, err
 }
 
 func (a *App) downloadAndInstallUpdate(url string) (string, error) {
