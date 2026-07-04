@@ -1,0 +1,18 @@
+/* Entry point — each concern lives in its own file so it's easier to find
+   and touch just the bit you need. Import order barely matters (CSS custom
+   properties from base.css resolve regardless of position), but grouping
+   base -> layout -> per-feature -> overlays keeps it readable top to bottom. */
+
+@import './base.css';
+@import './controls.css';
+
+@import './menubar.css';
+@import './workbench.css';
+@import './glyph-list.css';
+@import './toolbar.css';
+@import './canvas.css';
+@import './inspector.css';
+
+@import './toast.css';
+@import './modal.css';
+@import './fullscreen-overlay.css';

@@ -1,0 +1,96 @@
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--panel);
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+  row-gap: 10px;
+}
+.tool-btn {
+  width: 32px;
+  height: 30px;
+  justify-content: center;
+  padding: 0;
+}
+.toolbar-group {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+.toolbar-label {
+  font-size: 10px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-right: 2px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.toolbar-label svg.icon {
+  width: 12px;
+  height: 12px;
+  color: var(--ink-dim);
+}
+
+/* Toolbar groups as distinct labeled "cards" instead of one glued-together row */
+.tb-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  padding: 6px 8px;
+}
+.tb-card-label {
+  font-size: 9.5px;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  line-height: 1;
+}
+.tb-card-label svg.icon {
+  width: 11px;
+  height: 11px;
+  color: var(--ink-dim);
+}
+.tb-card-body {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.tb-card button {
+  background: var(--panel);
+}
+.tb-card button.active {
+  background: var(--hover-bg);
+}
+
+.tb-card.danger button:hover {
+  border-color: #c24a4a;
+  color: #ff8080;
+}
+
+/* Short windows (e.g. 1280x720): trim the toolbar's own height so the
+   canvas below still has room to breathe. */
+@media (max-height: 760px) {
+  .editor-toolbar {
+    padding: 6px 10px;
+    gap: 6px;
+    row-gap: 6px;
+  }
+  .tb-card {
+    padding: 4px 6px;
+    gap: 4px;
+  }
+  .tool-btn {
+    width: 28px;
+    height: 26px;
+  }
+}

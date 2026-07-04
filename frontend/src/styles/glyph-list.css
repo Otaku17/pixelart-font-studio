@@ -1,0 +1,141 @@
+.search-wrap {
+  position: relative;
+  margin: 0 12px 10px 12px;
+}
+.search-wrap svg.icon {
+  position: absolute;
+  left: 9px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 13px;
+  height: 13px;
+  color: var(--text-dim);
+  pointer-events: none;
+}
+.search-wrap input {
+  padding-left: 30px;
+}
+
+.glyph-grid {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 10px 10px 10px;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  align-content: start;
+}
+@media (max-width: 1366px) {
+  .glyph-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+.glyph-tile {
+  aspect-ratio: 1;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+}
+.glyph-tile:hover {
+  border-color: var(--ink-dim);
+}
+.glyph-tile.selected {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 1px var(--ink) inset;
+}
+.glyph-tile canvas {
+  image-rendering: pixelated;
+  width: 70%;
+  height: 70%;
+}
+.glyph-tile .lbl {
+  position: absolute;
+  bottom: 1px;
+  right: 3px;
+  font-size: 8px;
+  color: var(--text-dim);
+}
+.glyph-tile.edited::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--accent-2);
+}
+.glyph-tile .del-btn {
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 10px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.glyph-tile:hover .del-btn {
+  display: flex;
+}
+.glyph-tile .del-btn:hover {
+  color: #ff6b6b;
+}
+.glyph-tile .copy-btn {
+  position: absolute;
+  top: 1px;
+  right: 3px;
+  width: 14px;
+  height: 14px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 10px;
+  line-height: 1;
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+.glyph-tile .copy-btn svg.icon {
+  width: 11px;
+  height: 11px;
+}
+.glyph-tile:hover .copy-btn {
+  display: flex;
+}
+.glyph-tile .copy-btn:hover {
+  color: var(--ink);
+}
+.empty-hint {
+  margin: 20px 14px;
+  color: var(--text-dim);
+  font-size: 11.5px;
+  line-height: 1.6;
+  white-space: pre-line;
+}
+.add-glyph {
+  display: flex;
+  gap: 6px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--line);
+}
+.add-glyph input {
+  width: 56px;
+  text-align: center;
+}
+.add-glyph button {
+  flex: 1;
+  justify-content: center;
+}
