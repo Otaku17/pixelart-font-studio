@@ -68,6 +68,7 @@ jobs:
           ls -l "$GOBIN/wails" || true
 
       - name: Build app
+        shell: bash
         env:
           CGO_ENABLED: 1
         run: |
