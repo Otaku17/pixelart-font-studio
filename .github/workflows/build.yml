@@ -3,10 +3,10 @@ name: Build desktop app
 on:
   push:
     branches: [main, master]
-    tags:
-      - 'v*.*.*'
   pull_request:
     branches: [main, master]
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
@@ -56,12 +56,15 @@ jobs:
         run: npm ci --no-audit --no-fund
 
       - name: Add Go bin to PATH
+        shell: bash
         run: echo "$HOME/go/bin" >> "$GITHUB_PATH"
 
       - name: Install Wails
+        shell: bash
         run: |
+          export GOBIN="$HOME/go/bin"
+          rm -f "$GOBIN/wails"
           go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
-          wails version
 
       - name: Build app
         env:
@@ -75,11 +78,11 @@ jobs:
           path: build/bin/
 
       - name: Create GitHub release
-        if: startsWith(github.ref, 'refs/tags/v') && matrix.os == 'windows-latest'
+        if: github.event_name == 'release' && matrix.os == 'windows-latest'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref_name }}
-          name: Release ${{ github.ref_name }}
+          tag_name: ${{ github.event.release.tag_name }}
+          name: Release ${{ github.event.release.tag_name }}
           draft: false
           prerelease: false
           files: |
