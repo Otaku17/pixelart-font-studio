@@ -65,11 +65,14 @@ jobs:
           export GOBIN="$HOME/go/bin"
           rm -f "$GOBIN/wails"
           go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+          ls -l "$GOBIN/wails" || true
 
       - name: Build app
         env:
           CGO_ENABLED: 1
-        run: wails build
+        run: |
+          export PATH="$HOME/go/bin:$PATH"
+          "$HOME/go/bin/wails" build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
