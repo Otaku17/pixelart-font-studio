@@ -16,13 +16,10 @@ jobs:
         include:
           - os: ubuntu-latest
             artifact_name: pixelart-font-studio-linux-amd64
-            build_cmd: wails build
           - os: macos-latest
             artifact_name: pixelart-font-studio-darwin-universal
-            build_cmd: wails build
           - os: windows-latest
             artifact_name: pixelart-font-studio-windows-amd64
-            build_cmd: wails build
 
     steps:
       - uses: actions/checkout@v4
@@ -37,15 +34,36 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install Linux system dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.0-dev \
+            libayatana-appindicator3-dev
+
+      - name: Install macOS system dependencies
+        if: runner.os == 'macOS'
+        run: |
+          xcode-select --install || true
+
       - name: Install frontend deps
         working-directory: frontend
         run: npm ci --no-audit --no-fund
 
+      - name: Add Go bin to PATH
+        run: echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
       - name: Install Wails
-        run: go install github.com/wailsapp/wails/v2/cmd/wails@latest
+        run: |
+          go install github.com/wailsapp/wails/v2/cmd/wails@v2.11.0
+          wails version
 
       - name: Build app
-        run: ${{ matrix.build_cmd }}
+        env:
+          CGO_ENABLED: 1
+        run: wails build
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
