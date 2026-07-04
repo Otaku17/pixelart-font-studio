@@ -10,7 +10,6 @@ import {
   shiftDown,
   invert,
 } from '../lib/bitmap';
-import { downloadAndInstallUpdate } from '../lib/actions';
 import type { Tool } from '../types';
 
 // Zoom used to live here as a slider, but it duplicated the Ctrl/Cmd + mouse
@@ -184,20 +183,6 @@ export function Toolbar({ onOpenFullGrid }: { onOpenFullGrid: () => void }) {
             onClick={onOpenFullGrid}
           >
             <Icon name="expand" />
-          </button>
-        </div>
-      </div>
-
-      {/* Update the app from the latest GitHub release when available */}
-      <div className="tb-card">
-        <span className="tb-card-label">{t.updateLabel}</span>
-        <div className="tb-card-body">
-          <button
-            className="tool-btn"
-            title={t.updateButton}
-            onClick={() => void downloadAndInstallUpdate(true)}
-          >
-            <Icon name="refresh" />
           </button>
         </div>
       </div>

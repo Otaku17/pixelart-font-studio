@@ -15,7 +15,7 @@ func main() {
 	app := NewApp()
 
 	err := wails.Run(&options.App{
-		Title:     "PixelArt Font Studio TEST",
+		Title:     "PixelArt Font Studio",
 		Width:     1280,
 		Height:    720,
 		MinWidth:  1024,
