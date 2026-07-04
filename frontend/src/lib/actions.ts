@@ -137,6 +137,10 @@ export async function exportTTF() {
   }
 }
 
+function normalizeUpdateAvailable(value: unknown): boolean {
+  return value === true || value === 'true' || value === 1 || value === '1';
+}
+
 async function getUpdateInfo(force = false) {
   try {
     const [version, url, available, errorMessage] =
@@ -145,7 +149,7 @@ async function getUpdateInfo(force = false) {
       console.warn('Update check skipped', errorMessage);
       return null;
     }
-    if (!available || !version) {
+    if (!normalizeUpdateAvailable(available) || !version) {
       return null;
     }
     return { version, url };
@@ -173,10 +177,10 @@ export async function checkForUpdatesStatus(force = false) {
   return getUpdateInfo(force);
 }
 
-export async function hasCompatibleUpdate(force = false) {
+export async function hasCompatibleUpdate(force = false): Promise<boolean> {
   try {
     const [, , available] = await AppBindings.CheckForUpdates(force);
-    return available;
+    return normalizeUpdateAvailable(available);
   } catch {
     return false;
   }
