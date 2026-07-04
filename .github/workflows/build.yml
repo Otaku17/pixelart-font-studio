@@ -9,6 +9,9 @@ on:
     types: [published]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ${{ matrix.os }}
@@ -82,7 +85,7 @@ jobs:
           path: build/bin/
 
       - name: Create GitHub release
-        if: github.event_name == 'release' && matrix.os == 'windows-latest'
+        if: github.event_name == 'release' && runner.os == 'Windows'
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.release.tag_name }}
