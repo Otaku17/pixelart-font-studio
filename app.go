@@ -34,10 +34,47 @@ type githubRelease struct {
 }
 
 const (
-	appVersion        = "1.0.0"
 	updateRepo        = "Otaku17/pixelart-font-studio"
 	updateCheckWindow = 24 * time.Hour
 )
+
+func readAppVersionFromPackageJSON(path string) (string, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return "", err
+	}
+	var payload struct {
+		Version string `json:"version"`
+	}
+	if err := json.Unmarshal(data, &payload); err != nil {
+		return "", err
+	}
+	version := strings.TrimSpace(payload.Version)
+	if version == "" {
+		return "", fmt.Errorf("missing version in %s", path)
+	}
+	return version, nil
+}
+
+func getAppVersion() string {
+	candidates := []string{
+		filepath.Join("frontend", "package.json"),
+		filepath.Join("..", "frontend", "package.json"),
+	}
+	if execPath, err := os.Executable(); err == nil {
+		execDir := filepath.Dir(execPath)
+		candidates = append(candidates,
+			filepath.Join(execDir, "frontend", "package.json"),
+			filepath.Join(execDir, "..", "frontend", "package.json"),
+		)
+	}
+	for _, candidate := range candidates {
+		if version, err := readAppVersionFromPackageJSON(candidate); err == nil {
+			return version
+		}
+	}
+	return "1.0.0"
+}
 
 func compareVersions(left, right string) int {
 	left = strings.TrimPrefix(strings.TrimSpace(left), "v")
@@ -71,8 +108,12 @@ func selectReleaseAsset(assets []releaseAsset, goos, goarch string) *releaseAsse
 		name := strings.ToLower(asset.Name)
 		isArchive := strings.Contains(name, ".zip") || strings.Contains(name, ".tar.gz") || strings.Contains(name, ".tgz")
 		isBinary := strings.HasSuffix(name, ".exe") || strings.HasSuffix(name, ".app") || strings.HasSuffix(name, ".dmg") || strings.HasSuffix(name, ".pkg") || strings.HasSuffix(name, ".msi")
-		if !isArchive && !isBinary {
+		isGenericBinary := name == "pixelart-font-studio" || name == strings.ToLower("pixelart-font-studio")
+		if !isArchive && !isBinary && !isGenericBinary {
 			continue
+		}
+		if isGenericBinary {
+			return &asset
 		}
 		switch goos {
 		case "windows":
@@ -133,7 +174,7 @@ func (a *App) checkForUpdates(force bool) (string, string, bool, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&release); err != nil {
 		return "", "", false, err
 	}
-	if compareVersions(release.TagName, appVersion) <= 0 {
+	if compareVersions(release.TagName, getAppVersion()) <= 0 {
 		return "", "", false, nil
 	}
 	asset := selectReleaseAsset(release.Assets, stdruntime.GOOS, stdruntime.GOARCH)
