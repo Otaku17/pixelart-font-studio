@@ -54,9 +54,16 @@ jobs:
         run: |
           xcode-select --install || true
 
-      - name: Install frontend deps
-        working-directory: frontend
+      # npm workspaces: one lockfile at the root installs frontend + packages/*
+      - name: Install JS deps
         run: npm ci --no-audit --no-fund
+
+      - name: Lint, typecheck and test JS
+        shell: bash
+        run: |
+          npm run lint
+          npm run typecheck
+          npm test
 
       - name: Add Go bin to PATH
         shell: bash
@@ -78,11 +85,26 @@ jobs:
           export PATH="$HOME/go/bin:$PATH"
           "$HOME/go/bin/wails" build
 
+      - name: Test Go
+        shell: bash
+        run: go test . ./backend
+
+      # One file per platform, so the in-app updater can pick the right asset.
+      - name: Package release asset
+        shell: bash
+        run: |
+          mkdir -p build/release
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            ditto -c -k --keepParent build/bin/pixelart-font-studio.app "build/release/${{ matrix.artifact_name }}.zip"
+          else
+            cp build/bin/pixelart-font-studio.exe build/release/pixelart-font-studio.exe
+          fi
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: ${{ matrix.artifact_name }}
-          path: build/bin/
+          path: build/release/
 
   release:
     needs: build

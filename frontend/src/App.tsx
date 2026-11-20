@@ -1,88 +1,61 @@
-import { useEffect, useState } from 'react';
-import { MenuBar } from './components/MenuBar';
-import { Toolbar } from './components/Toolbar';
-import { GlyphList } from './components/GlyphList';
-import { PixelEditor } from './components/PixelEditor';
-import { GlyphMeta } from './components/GlyphMeta';
-import { PreviewPanel } from './components/PreviewPanel';
-import { FullGridOverlay } from './components/FullGridOverlay';
-import { Toast } from './components/Toast';
-import { useEditorStore } from './state/store';
-import { applyThemeToDocument } from './lib/theme';
-import { checkForUpdates } from './lib/actions';
+import { useEffect } from 'react';
+import { AppShell } from 'soft-dark-ui';
+import { ShortcutsModal } from './components/dialogs/ShortcutsModal';
+import { PreferencesModal } from './components/dialogs/PreferencesModal';
+import { EditorStatus } from './components/editor/EditorStatus';
+import { EditorToolbar } from './components/editor/EditorToolbar';
+import { PixelEditor } from './components/editor/PixelEditor';
+import { ExportDialog } from './components/export/ExportDialog';
+import { FullGridOverlay } from './components/glyphs/FullGridOverlay';
+import { GlyphPanel } from './components/glyphs/GlyphPanel';
+import { InspectorPanel } from './components/inspector/InspectorPanel';
+import { AppHeader } from './components/layout/AppHeader';
+import { AppTitleBar } from './components/layout/AppTitleBar';
+import { NoticeBridge } from './components/NoticeBridge';
+import { useGlobalShortcuts } from './hooks/useGlobalShortcuts';
+import { useWindowTitle } from './hooks/useWindowTitle';
+import { updateActor } from './machines/update';
+import { prefsStore, usePrefs } from './state/prefs';
+import { applyThemeToDocument } from './state/theme';
+import { useDialog } from './state/ui';
 
 export default function App() {
-  const newBlankProject = useEditorStore((s) => s.newBlankProject);
-  const undo = useEditorStore((s) => s.undo);
-  const redo = useEditorStore((s) => s.redo);
-  const clearCurrentGlyph = useEditorStore((s) => s.clearCurrentGlyph);
-  const themePref = useEditorStore((s) => s.themePref);
-  const resolvedTheme = useEditorStore((s) => s.resolvedTheme);
-  const [fullGridOpen, setFullGridOpen] = useState(false);
+  const resolvedTheme = usePrefs((p) => p.resolvedTheme);
+  const themePref = usePrefs((p) => p.themePref);
+  const dialog = useDialog();
 
-  useEffect(() => {
-    applyThemeToDocument(resolvedTheme);
-  }, [resolvedTheme]);
+  useGlobalShortcuts();
+  useWindowTitle();
 
+  useEffect(() => applyThemeToDocument(resolvedTheme), [resolvedTheme]);
+
+  // Follow live OS theme changes while "System" is selected.
   useEffect(() => {
     if (themePref !== 'system' || !window.matchMedia) return;
     const mq = window.matchMedia('(prefers-color-scheme: light)');
-    const onChange = () =>
-      useEditorStore.setState({ resolvedTheme: mq.matches ? 'light' : 'dark' });
+    const onChange = () => prefsStore.trigger.systemThemeChanged();
     mq.addEventListener('change', onChange);
     return () => mq.removeEventListener('change', onChange);
   }, [themePref]);
 
+  // One update check at launch (cached for 24 h by the backend).
   useEffect(() => {
-    newBlankProject();
-    void checkForUpdates(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    updateActor.send({ type: 'CHECK', force: false });
   }, []);
 
-  useEffect(() => {
-    function onKeyDown(e: KeyboardEvent) {
-      const isMac = navigator.platform?.toLowerCase().includes('mac');
-      const mod = isMac ? e.metaKey : e.ctrlKey;
-
-      if (mod && (e.key === 'z' || e.key === 'Z')) {
-        e.preventDefault();
-        if (e.shiftKey) redo();
-        else undo();
-        return;
-      }
-      if (mod && (e.key === 'y' || e.key === 'Y')) {
-        e.preventDefault();
-        redo();
-        return;
-      }
-      if (e.key === 'Delete') {
-        const target = e.target as HTMLElement | null;
-        if (target && ['INPUT', 'TEXTAREA'].includes(target.tagName)) return;
-        if (useEditorStore.getState().tool === 'select') return; // handled by PixelEditor's own selection-aware shortcut
-        e.preventDefault();
-        clearCurrentGlyph();
-      }
-    }
-    document.addEventListener('keydown', onKeyDown);
-    return () => document.removeEventListener('keydown', onKeyDown);
-  }, [undo, redo, clearCurrentGlyph]);
-
   return (
-    <div className="app">
-      <MenuBar />
-      <div className="workbench">
-        <GlyphList />
-        <main className="editor-panel">
-          <Toolbar onOpenFullGrid={() => setFullGridOpen(true)} />
+    <>
+      <AppShell titlebar={<AppTitleBar />} header={<AppHeader />} sidebar={<GlyphPanel />} aside={<InspectorPanel />} footer={<EditorStatus />}>
+        <div className="editor-panel">
+          <EditorToolbar />
           <PixelEditor />
-          <GlyphMeta />
-        </main>
-        <PreviewPanel />
-      </div>
-      {fullGridOpen && (
-        <FullGridOverlay onClose={() => setFullGridOpen(false)} />
-      )}
-      <Toast />
-    </div>
+        </div>
+      </AppShell>
+      {dialog === 'fullGrid' && <FullGridOverlay />}
+      {dialog === 'prefs' && <PreferencesModal />}
+      {dialog === 'shortcuts' && <ShortcutsModal />}
+      <ExportDialog />
+      <NoticeBridge />
+    </>
   );
 }

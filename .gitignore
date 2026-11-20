@@ -1,17 +1,66 @@
-/build/bin
-/frontend/dist
-/frontend/node_modules
-/frontend/package.json.md5
-*.log
-.DS_Store
-.vscode/
-.env
-.env.*
-*.swp
-*.tmp
+# Only sources are committed. Everything below is rebuilt by
+# `npm install`, `npm run build` or `wails build`.
+
+# Dependencies (npm workspaces: root and every package)
+node_modules/
+.npm/
+.pnpm-store/
+
+# Build output
+build/bin/
+build/release/
+frontend/dist/
+dist/
+*.tsbuildinfo
+.vite/
+.cache/
+
+# Wails internal files
+frontend/package.json.md5
+build/windows/installer/
+
+# Go
+*.test
+*.out
+*.prof
+/pixelart-font-studio
+/pixelart-font-studio.exe
+vendor/
+
+# Tests, lint, coverage
+coverage/
+.nyc_output/
+.eslintcache
+.vitest/
+*.lcov
+
+# Update downloads and partial files
+*.part
+
+# Archives
 *.zip
 *.tar.gz
 *.tgz
-coverage/
+*.7z
+
+# Logs and temp files
+*.log
+npm-debug.log*
+*.tmp
+*.swp
+*~
+
+# Secrets and local config
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Editors and OS
+.vscode/
 .idea/
+*.code-workspace
+.DS_Store
 Thumbs.db
+desktop.ini

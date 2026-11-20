@@ -1,0 +1,23 @@
+{
+  "name": "pixelart-font-studio",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "packages/*",
+    "frontend"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run dev -w @pfs/desktop",
+    "build": "npm run build -w @pfs/desktop",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "eslint": "^10.15.0",
+    "typescript": "^5.9.0"
+  }
+}

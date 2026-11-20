@@ -1,0 +1,114 @@
+.glyph-panel {
+  display: flex;
+  flex-direction: column;
+  width: var(--glyph-panel-width);
+  min-height: 0;
+  background: var(--color-surface);
+  border-right: 1px solid var(--color-border);
+}
+.glyph-grid,
+.full-grid {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  overflow-y: auto;
+}
+.glyph-grid {
+  flex: 1;
+  grid-template-columns: repeat(4, 1fr);
+  padding: 0 var(--space-3) var(--space-3);
+}
+.glyph-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1;
+  background: #0d0f12;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  outline: none;
+}
+.glyph-tile:hover {
+  border-color: var(--color-border-hover);
+}
+.glyph-tile:focus-visible {
+  box-shadow: 0 0 0 2px var(--color-focus-ring);
+}
+.glyph-tile.selected {
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 1px var(--color-accent) inset;
+}
+.glyph-tile.edited::before {
+  content: '';
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--color-accent);
+}
+.glyph-tile canvas {
+  width: 70%;
+  height: 70%;
+  image-rendering: pixelated;
+}
+.glyph-tile__label {
+  position: absolute;
+  right: 4px;
+  bottom: 2px;
+  font-size: 9px;
+  color: #9198a3;
+}
+.glyph-tile__actions {
+  position: absolute;
+  top: 1px;
+  right: 1px;
+  display: none;
+  gap: 1px;
+}
+.glyph-tile:hover .glyph-tile__actions {
+  display: flex;
+}
+.add-glyph {
+  display: grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: var(--space-2);
+  align-items: center;
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+.add-glyph input {
+  text-align: center;
+}
+
+.full-grid-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 800;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: var(--color-scrim);
+  backdrop-filter: blur(4px);
+}
+.full-grid-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+.full-grid-title {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+}
+.full-grid-search {
+  flex: 1;
+  max-width: 360px;
+}
+.full-grid {
+  flex: 1;
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+}

@@ -13,29 +13,43 @@ This project is a desktop port of the original PixelArt Font Studio concept. The
 - Horizontal and vertical mirroring, shifting, inversion, and clearing
 - Font import from .ttf, .otf, and .woff files with native-size detection and rasterization
 - Live text preview with zoom, spacing, and ink/paper controls
-- Export options for project JSON, glyph PNG, atlas PNG, and TTF font files
+- One export dialog for TTF, BMFont, PNG atlas + JSON, glyph PNG and project files
 - Localization support for multiple languages
 - Fullscreen preview and glyph search experience
 
 ## Project structure
 
+npm workspaces monorepo; the Wails app stays at the root.
+
 ```text
-pixelart-font-studio-wails/
-├── app.go                 # Wails backend entry point and native file dialogs
-├── main.go                # Bootstrap entry point for the desktop app
-├── wails.json             # Wails project configuration
-├── go.mod                 # Go module definition
-├── README.md              # Project documentation
-└── frontend/
-    ├── src/
-    │   ├── components/     # UI components such as the toolbar, editor, menus, and modals
-    │   ├── lib/            # Rendering, file I/O, font import/export, i18n, and theme helpers
-    │   ├── state/          # Zustand store for editor state and actions
-    │   ├── assets/         # Locale JSON files and app assets
-    │   └── types.ts        # Shared TypeScript types
-    ├── package.json        # Frontend dependencies and scripts
-    └── wailsjs/            # Generated Wails bindings
+pixelart-font-studio/
+├── main.go, wails.json       # Wails bootstrap (must stay at the root: Wails builds it, go:embed needs frontend/)
+├── backend/                  # Go package bound to the frontend
+│   ├── app.go, files.go      # dialogs, file IO, reveal in folder
+│   └── update*.go            # GitHub release updater (version embedded from frontend/package.json)
+├── package.json              # npm workspaces root (frontend + packages/*)
+├── packages/
+│   ├── core/                 # @pfs/core: bitmaps, project format, font import, TTF/BMFont/atlas export (+ tests)
+│   └── eslint-config/        # @pfs/eslint-config: shared rules, 200 lines max per file
+└── frontend/                 # @pfs/desktop: React UI (Soft Dark UI), XState
+    ├── src/state/            # @xstate/store stores: editor document, preferences, open dialog
+    ├── src/machines/         # XState machines: update, export dialog, canvas pointer gestures
+    ├── src/services/         # Wails/browser file IO, export runner, commands
+    ├── src/components/       # UI, grouped by area
+    └── wailsjs/              # Generated Wails bindings
 ```
+
+## Export formats
+
+| Format | Files | Use it for |
+|---|---|---|
+| TrueType | `.ttf` | Installing the font anywhere (PSDK, RPG Maker, OS, browsers) |
+| BMFont | `.fnt` + `.png` | Game engines: Godot, Phaser, Unity, LÖVE, MonoGame, libGDX |
+| Atlas | `.png` + `.json` | Custom engines: sheet plus glyph positions and advances |
+| Glyph | `.png` | The selected glyph |
+| Project | `.json` | Editable save; v2 stores rows as `#`/`.` text and the font metrics, v1 files still open |
+
+BMFont, atlas and glyph exports share scale, padding, columns, ink and background options. The last choice is remembered.
 
 ## Requirements
 
@@ -57,14 +71,20 @@ Start the full desktop app with hot reload:
 wails dev
 ```
 
-This runs the app in development mode and regenerates the frontend bindings from the exported Go methods in [app.go](app.go).
+This runs the app in development mode and regenerates the frontend bindings from the exported Go methods in [backend/](backend).
 
 To run only the frontend in a browser:
 
 ```bash
-cd frontend
 npm install
 npm run dev
+```
+
+Checks (also run in CI):
+
+```bash
+npm run lint && npm run typecheck && npm test
+go test . ./backend
 ```
 
 In browser mode, the app falls back to browser-based file upload/download behavior when Wails bindings are unavailable.
@@ -91,7 +111,7 @@ The update flow targets the repository at https://github.com/Otaku17/pixelart-fo
 
 ## CI / release automation
 
-A GitHub Actions workflow is included in [.github/workflows/build.yml](.github/workflows/build.yml) to build the desktop app for Linux, macOS, and Windows automatically on push, pull requests, or manual dispatch.
+A GitHub Actions workflow is included in [.github/workflows/build.yml](.github/workflows/build.yml) to lint, test and build the desktop app for Windows and macOS on push, pull requests, or manual dispatch. On a published release it attaches one file per platform (`pixelart-font-studio.exe`, a zipped macOS app), which is what the in-app updater looks for.
 
 ## Technical notes
 
@@ -105,9 +125,8 @@ Contributions are welcome. A good workflow is:
 
 1. Start the app in development mode.
 2. Make focused changes and keep the UI behavior consistent.
-3. Verify the frontend build before submitting changes.
+3. Run the checks before submitting changes.
 
 ```bash
-cd frontend
-npm run build
+npm run lint && npm run typecheck && npm test && npm run build
 ```
