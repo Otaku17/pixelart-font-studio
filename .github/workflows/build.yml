@@ -19,10 +19,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-14
+          - os: macos-15
             artifact_name: pixelart-font-studio-darwin-universal
           - os: windows-2022
             artifact_name: pixelart-font-studio-windows-amd64
+          - os: ubuntu-24.04
+            artifact_name: pixelart-font-studio-linux-amd64
 
     steps:
       - uses: actions/checkout@v4
@@ -41,13 +43,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libayatana-appindicator3-dev
-
-          if apt-cache show libwebkit2gtk-4.1-dev >/dev/null 2>&1; then
-            sudo apt-get install -y libwebkit2gtk-4.1-dev libjavascriptcoregtk-4.1-dev
-          else
-            sudo apt-get install -y libwebkit2gtk-4.0-dev libjavascriptcoregtk-4.0-dev
-          fi
+          sudo apt-get install -y build-essential pkg-config libgtk-3-dev libwebkit2gtk-4.1-dev
 
       - name: Install macOS system dependencies
         if: runner.os == 'macOS'
@@ -83,7 +79,15 @@ jobs:
           CGO_ENABLED: 1
         run: |
           export PATH="$HOME/go/bin:$PATH"
-          "$HOME/go/bin/wails" build
+          if [ "$RUNNER_OS" = "macOS" ]; then
+            # Intel + Apple Silicon in one app, as the asset name says
+            "$HOME/go/bin/wails" build -platform darwin/universal
+          elif [ "$RUNNER_OS" = "Linux" ]; then
+            # Ubuntu 24.04 only ships WebKitGTK 4.1, which Wails needs this tag for
+            "$HOME/go/bin/wails" build -tags webkit2_41
+          else
+            "$HOME/go/bin/wails" build
+          fi
 
       - name: Test Go
         shell: bash
@@ -96,6 +100,8 @@ jobs:
           mkdir -p build/release
           if [ "$RUNNER_OS" = "macOS" ]; then
             ditto -c -k --keepParent build/bin/pixelart-font-studio.app "build/release/${{ matrix.artifact_name }}.zip"
+          elif [ "$RUNNER_OS" = "Linux" ]; then
+            tar -czf "build/release/${{ matrix.artifact_name }}.tar.gz" -C build/bin pixelart-font-studio
           else
             cp build/bin/pixelart-font-studio.exe build/release/pixelart-font-studio.exe
           fi

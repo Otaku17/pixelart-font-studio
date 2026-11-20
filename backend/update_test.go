@@ -24,9 +24,13 @@ func TestSelectReleaseAsset(t *testing.T) {
 		{Name: "pixelart-font-studio", BrowserDownloadURL: "bare"},
 		{Name: "pixelart-font-studio-darwin-universal.zip", BrowserDownloadURL: "mac"},
 		{Name: "pixelart-font-studio.exe", BrowserDownloadURL: "win"},
+		{Name: "pixelart-font-studio-linux-amd64.tar.gz", BrowserDownloadURL: "linux"},
 	}
 	if a := selectReleaseAsset(assets, "windows"); a == nil || a.BrowserDownloadURL != "win" {
 		t.Fatalf("windows asset not found: %+v", a)
+	}
+	if a := selectReleaseAsset(assets, "linux"); a == nil || a.BrowserDownloadURL != "linux" {
+		t.Fatalf("linux asset not found: %+v", a)
 	}
 	if a := selectReleaseAsset(assets, "darwin"); a == nil || a.BrowserDownloadURL != "mac" {
 		t.Fatalf("mac asset not found: %+v", a)
