@@ -1,5 +1,6 @@
 import opentype from 'opentype.js';
 import type { Project } from '../types';
+import { fixSfntChecksums } from './sfntChecksum';
 
 /** Pixel column 1 is the glyph origin; column 0 is left padding (see rasterize). */
 export const ORIGIN_COLUMN = 1;
@@ -82,7 +83,7 @@ export function buildFontArrayBuffer(project: Project, familyName = project.font
     glyphs: out,
   });
 
-  const buffer = font.toArrayBuffer();
+  const buffer = fixSfntChecksums(font.toArrayBuffer());
   // Sanity check: re-parse to make sure we produced a valid font.
   opentype.parse(buffer);
   return buffer;
